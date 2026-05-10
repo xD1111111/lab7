@@ -82,4 +82,26 @@ class Observable {
   }
 }
 
-module.exports = { MessageBus, Observable };
+function map(fn) {
+  return (source) => new Observable((observer) => {
+    const sub = source.subscribe({
+      next: (value) => observer.next(fn(value)),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete(),
+    });
+    return () => sub.unsubscribe();
+  });
+}
+
+function filter(predicate) {
+  return (source) => new Observable((observer) => {
+    const sub = source.subscribe({
+      next: (value) => { if (predicate(value)) observer.next(value); },
+      error: (err) => observer.error(err),
+      complete: () => observer.complete(),
+    });
+    return () => sub.unsubscribe();
+  });
+}
+
+module.exports = { MessageBus, Observable, map, filter };
